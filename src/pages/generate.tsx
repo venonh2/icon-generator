@@ -1,3 +1,4 @@
+import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import { useForm } from "react-hook-form";
 import { Input } from "~/components/input";
@@ -42,6 +43,10 @@ export default function GeneratePage(): JSX.Element {
   //   };
   // }
 
+  const session = useSession();
+
+  const isUserLoggedIn = session.status === "authenticated";
+
   return (
     <>
       <Head>
@@ -50,6 +55,22 @@ export default function GeneratePage(): JSX.Element {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className="flex min-h-screen items-center justify-center">
+        {!isUserLoggedIn ? (
+          <button
+            className="h-10 rounded bg-cyan-600 px-2 py-2"
+            onClick={() => signIn()}
+          >
+            Login
+          </button>
+        ) : (
+          <button
+            className="h-10 rounded bg-cyan-600 px-2 py-2"
+            onClick={() => signOut()}
+          >
+            Sign out
+          </button>
+        )}
+
         <form
           action=""
           className="flex flex-col gap-2"
