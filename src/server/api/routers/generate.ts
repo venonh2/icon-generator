@@ -11,6 +11,12 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { Configuration, OpenAIApi } from "openai";
 
+const configuration = new Configuration({
+  apiKey: env.OPENAI_API_KEY,
+});
+
+const openai = new OpenAIApi(configuration);
+
 // DALL_API_KEY
 export const generateRouter = createTRPCRouter({
   generateIcon: protectedProcedure
@@ -32,24 +38,18 @@ export const generateRouter = createTRPCRouter({
         },
       });
 
+      const response = await openai.createImage({
+        prompt: input.prompt,
+        n: 1,
+        size: "1024x1024",
+      });
+
       if (count <= 0) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Sem creditos disponiveis, por favor adquira mais",
         });
       }
-
-      const configuration = new Configuration({
-        apiKey: env.OPENAI_API_KEY,
-      });
-
-      const openai = new OpenAIApi(configuration);
-
-      const response = await openai.createImage({
-        prompt: input.prompt,
-        n: 1,
-        size: "1024x1024",
-      });
 
       const image_url = response.data.data[0].url;
 
