@@ -32,12 +32,12 @@ export const generateRouter = createTRPCRouter({
         },
       });
 
-      // if (count <= 0) {
-      //   throw new TRPCError({
-      //     code: "BAD_REQUEST",
-      //     message: "Sem creditos disponiveis, por favor adquira mais",
-      //   });
-      // }
+      if (count <= 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Sem creditos disponiveis, por favor adquira mais",
+        });
+      }
 
       const configuration = new Configuration({
         apiKey: env.OPENAI_API_KEY,
