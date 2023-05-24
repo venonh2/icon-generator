@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "~/components/input";
+import { Preview } from "~/components/preview";
 import { api } from "~/utils/api";
 
 type FormData = {
@@ -11,9 +12,9 @@ type FormData = {
 };
 
 export default function GeneratePage(): JSX.Element {
-  const { register, handleSubmit, formState, getValues } = useForm<FormData>();
-
-  const [image, setImage] = useState<string>("");
+  const { getValues, register, handleSubmit, formState } = useForm<FormData>();
+  const [image, setImage] = useState<string>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   //#region api
 
@@ -21,13 +22,26 @@ export default function GeneratePage(): JSX.Element {
    * @description quando eu invoce ela ali em baixo, linha 25 eu posso chamar mutate/mutateAsync, se chamar mutate, trato a resposta igual faco no RTK,
    * dentro do useMutation aqui no topo, se usar o mutateAsync, é uma promise
    */
+
   const generateIcon = api.generate.generateIcon.useMutation({
-    onSuccess: (res) => setImage(res.data),
+    onSuccess: (res) => {
+      setImage(
+        "https://images-ext-1.discordapp.net/external/8JMWQD1q0fFQTUE21nO_ry8hAb5n_DnKfDL_epyQnz0/%3Fst%3D2023-05-23T22%253A56%253A49Z%26se%3D2023-05-24T00%253A56%253A49Z%26sp%3Dr%26sv%3D2021-08-06%26sr%3Db%26rscd%3Dinline%26rsct%3Dimage%2Fpng%26skoid%3D6aaadede-4fb3-4698-a8f6-684d7786b067%26sktid%3Da48cca56-e6da-484e-a814-9c849652bcb3%26skt%3D2023-05-23T20%253A54%253A31Z%26ske%3D2023-05-24T20%253A54%253A31Z%26sks%3Db%26skv%3D2021-08-06%26sig%3DUzatCEAuzpmZwoCCzNayjyGfnmZJSiNp1l3lzto0pTU%253D/https/oaidalleapiprodscus.blob.core.windows.net/private/org-4LVar7SDODsCBnAqAUCWqRVo/user-9IOvLDdP7mHCAOeBs2dgkqrh/img-HVDRBrxGjV8MMGD7grwrrptY.png?width=662&height=662"
+      );
+      setLoading(false);
+    },
+    onError: (er) => {
+      setImage(
+        "https://images-ext-1.discordapp.net/external/8JMWQD1q0fFQTUE21nO_ry8hAb5n_DnKfDL_epyQnz0/%3Fst%3D2023-05-23T22%253A56%253A49Z%26se%3D2023-05-24T00%253A56%253A49Z%26sp%3Dr%26sv%3D2021-08-06%26sr%3Db%26rscd%3Dinline%26rsct%3Dimage%2Fpng%26skoid%3D6aaadede-4fb3-4698-a8f6-684d7786b067%26sktid%3Da48cca56-e6da-484e-a814-9c849652bcb3%26skt%3D2023-05-23T20%253A54%253A31Z%26ske%3D2023-05-24T20%253A54%253A31Z%26sks%3Db%26skv%3D2021-08-06%26sig%3DUzatCEAuzpmZwoCCzNayjyGfnmZJSiNp1l3lzto0pTU%253D/https/oaidalleapiprodscus.blob.core.windows.net/private/org-4LVar7SDODsCBnAqAUCWqRVo/user-9IOvLDdP7mHCAOeBs2dgkqrh/img-HVDRBrxGjV8MMGD7grwrrptY.png?width=662&height=662"
+      );
+      setLoading(false);
+    },
   });
 
   //#endregion api
 
   const onSubmit = (data: FormData) => {
+    setLoading(true);
     generateIcon.mutate({
       prompt: data.prompt,
     });
@@ -66,33 +80,38 @@ export default function GeneratePage(): JSX.Element {
       />
 
       <main className="flex min-h-screen items-center justify-center">
-        {!isUserLoggedIn ? (
-          <button
-            className="h-10 rounded bg-cyan-600 px-2 py-2"
-            onClick={() => signIn()}
-          >
-            Login
-          </button>
+        {image && loading === false ? (
+          <Preview link={image} description={getValues("prompt")} />
         ) : (
-          <button
-            className="h-10 rounded bg-cyan-600 px-2 py-2"
-            onClick={() => signOut()}
-          >
-            Sign out
-          </button>
+          <>
+            {!isUserLoggedIn ? (
+              <button
+                className="h-10 rounded bg-cyan-600 px-2 py-2"
+                onClick={() => signIn()}
+              >
+                Login
+              </button>
+            ) : (
+              <button
+                className="h-10 rounded bg-cyan-600 px-2 py-2"
+                onClick={() => signOut()}
+              >
+                Sign out
+              </button>
+            )}
+            <form
+              action=""
+              className="flex flex-col gap-2"
+              onSubmit={handleSubmit(onSubmit)}
+            >
+              <Input label="Entrada" name="prompt" register={register} />
+
+              <button className="rounded bg-yellow-500 px-3 py-2 hover:bg-yellow-600">
+                Enviar
+              </button>
+            </form>
+          </>
         )}
-
-        <form
-          action=""
-          className="flex flex-col gap-2"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <Input label="Entrada" name="prompt" register={register} />
-
-          <button className="rounded bg-yellow-500 px-3 py-2 hover:bg-yellow-600">
-            Enviar
-          </button>
-        </form>
       </main>
     </>
   );
