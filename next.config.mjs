@@ -18,5 +18,11 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  images: {
+    domains: [
+      "oaidalleapiprodscus.blob.core.windows.net",
+      "images-ext-1.discordapp.net",
+    ],
+  },
 };
 export default config;
