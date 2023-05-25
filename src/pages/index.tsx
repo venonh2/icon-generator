@@ -7,33 +7,60 @@ import { api } from "~/utils/api";
 import Image from "next/image";
 
 import teste from "public/assets/home/isabela.jpg";
-import { useEffect } from "react";
-import { useMotionValue, useTransform } from "framer-motion";
+import { useEffect, useState } from "react";
+import { easeInOut, useMotionValue, useTransform } from "framer-motion";
+import { SpanTest } from "./../styles/styles";
+
+import { motion } from "framer-motion";
+
+import { cubicBezier, circOut, AnimatePresence } from "framer-motion";
+
+interface Position {
+  x: number[];
+  y: number[];
+}
 
 const Home: NextPage = () => {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
-  const { ref, x, y } = useMouse();
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [movement, setMovement] = useState<Position>({
+    x: [0],
+    y: [0],
+  });
+
+  // const opacity = useTransform(x, [0, 1, 0], [0, 1, 0], {
+  //   clamp: true,
+  //   ease: circOut,
+  // });
+
+  /*   const { ref, x, y } = useMouse();
 
   const testX = useMotionValue(10);
-  const testY = useTransform(testX, (value) => Math.sin(value / 10) * 50);
+  const testY = useTransform(testX, (value) => Math.sin(value / 10) * 50); */
 
   useEffect(() => {
-    const contianer = document.getElementById("image-trail");
+    const container = document.getElementById("image-trail");
 
-    contianer?.addEventListener("mousemove", handler);
+    container?.addEventListener("click", handler);
   }, []);
+  console.log(movement);
 
   function handler(event) {
-    const x = event.clientX;
-    const y = event.clientY;
+    const eventx = event.clientX;
+    const eventy = event.clientY;
 
-    console.log(x, y);
+    console.log(eventx, eventy);
 
-    const trail = document.getElementById("eita");
+    setMovement((old) => ({
+      x: [old?.x.pop(), eventx],
+      y: [old?.y.pop(), eventy],
+    }));
+    setIsVisible(true);
 
-    trail.style.left = x + "px";
-    trail.style.top = y + "px";
+    setTimeout(() => {
+      setIsVisible(false);
+    }, 1000);
   }
 
   return (
@@ -45,20 +72,45 @@ const Home: NextPage = () => {
       </Head>
       <main
         id="image-trail"
-        className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]"
+        className="block min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]"
+        style={{
+          position: "relative",
+          display: "block",
+        }}
       >
-        <Image
-          src={teste}
-          alt="tesdssds"
-          width={242}
-          height={302}
-          id="eita"
-          style={{
-            position: "absolute",
-            right: 300,
-            left: 300,
-          }}
-        />
+        <AnimatePresence>
+          {isVisible && (
+            <motion.div
+              id="eita"
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: 1,
+                ...movement,
+                //translate,
+              }}
+              exit={{ opacity: 0 }}
+              /*           style={{
+            opacity: opacity,
+          }} */
+              transition={{ duration: 1 }}
+            >
+              <motion.img
+                src={teste.src}
+                alt="tesdssds"
+                width={242}
+                height={302}
+                transition={{ duration: 1 }}
+                /*         style={{
+              position: "absolute",
+              opacity: opacity,
+            }} */
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </>
   );
